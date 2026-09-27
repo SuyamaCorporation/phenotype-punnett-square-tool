@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>メンデル遺伝 パンネット方格 表示ツール</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen p-4">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-2xl font-bold mb-1 text-teal-400">メンデル遺伝 パンネット方格</h1>
+    <p class="text-gray-400 text-sm mb-6">一遺伝子・二遺伝子の遺伝子型から表現型比を自動計算</p>
+
+    <!-- Mode tabs -->
+    <div class="flex gap-2 mb-4">
+      <button id="tab-mono" class="tab-btn bg-teal-700 text-white px-4 py-2 rounded font-medium text-sm" aria-label="一遺伝子モードに切り替える">一遺伝子</button>
+      <button id="tab-di" class="tab-btn bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-2 rounded font-medium text-sm" aria-label="二遺伝子モードに切り替える">二遺伝子</button>
+    </div>
+
+    <!-- Mono mode -->
+    <div id="panel-mono">
+      <div class="bg-gray-800 rounded p-4 mb-4">
+        <h2 class="text-sm font-bold text-gray-300 mb-4">親の遺伝子型を選択</h2>
+        <div class="grid grid-cols-2 gap-6">
+          <div>
+            <p class="text-xs text-gray-400 mb-2">親 P1（父方）</p>
+            <div class="flex gap-2">
+              <div>
+                <label for="p1-a1" class="block text-xs text-gray-500 mb-1">アレル 1</label>
+                <select id="p1-a1" class="bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-gray-100 focus:outline-none focus:border-teal-500">
+                  <option value="A">A（優性）</option>
+                  <option value="a">a（劣性）</option>
+                </select>
+              </div>
+              <div>
+                <label for="p1-a2" class="block text-xs text-gray-500 mb-1">アレル 2</label>
+                <select id="p1-a2" class="bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-gray-100 focus:outline-none focus:border-teal-500">
+                  <option value="A">A（優性）</option>
+                  <option value="a">a（劣性）</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400 mb-2">親 P2（母方）</p>
+            <div class="flex gap-2">
+              <div>
+                <label for="p2-a1" class="block text-xs text-gray-500 mb-1">アレル 1</label>
+                <select id="p2-a1" class="bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-gray-100 focus:outline-none focus:border-teal-500">
+                  <option value="A">A（優性）</option>
+                  <option value="a">a（劣性）</option>
+                </select>
+              </div>
+              <div>
+                <label for="p2-a2" class="block text-xs text-gray-500 mb-1">アレル 2</label>
+                <select id="p2-a2" class="bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm text-gray-100 focus:outline-none focus:border-teal-500">
+                  <option value="A">A（優性）</option>
+                  <option value="a">a（劣性）</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Trait labels -->
+        <div class="mt-4 grid grid-cols-2 gap-4">
+          <div>
+            <label for="dominant-trait" class="block text-xs text-gray-400 mb-1">優性形質の名前（任意）</label>
+            <input id="dominant-trait" type="text" value="丸種子" placeholder="例: 丸種子"
+              class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-gray-100 focus:outline-none focus:border-teal-500 w-full">
+          </div>
+          <div>
+            <label for="recessive-trait" class="block text-xs text-gray-400 mb-1">劣性形質の名前（任意）</label>
+            <input id="recessive-trait" type="text" value="しわ種子" placeholder="例: しわ種子"
+              class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-gray-100 focus:outline-none focus:border-teal-500 w-full">
+          </div>
+        </div>
+      </div>
+
+      <!-- Punnett grid mono -->
+      <div id="mono-grid-container" class="bg-gray-800 rounded p-4 mb-4 overflow-x-auto"></div>
+
+      <!-- Stats mono -->
+      <div id="mono-stats" class="bg-gray-800 rounded p-4 mb-4"></div>
+    </div>
+
+    <!-- Di mode -->
+    <div id="panel-di" class="hidden">
+      <div class="bg-gray-800 rounded p-4 mb-4">
+        <h2 class="text-sm font-bold text-gray-300 mb-3">二遺伝子（独立の法則）</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-xs text-gray-400 mb-1">親 P1（例: AaBb）</p>
+            <div class="flex gap-1 items-center">
+              <select id="di-p1-a1" class="bg-gray-700 border border-gray-600 rounded px-1 py-1 text-sm text-gray-100 focus:outline-none focus:border-teal-500">
+                <option value="A">A</option><option value="a">a</option>
+              </select>
+              <select id="di-p1-a2" class="bg-gray-700 border border-gray-600 rounded px-1 py-1 text-sm text-gray-100 focus:outline-none focus:border-teal-500">
+                <option value="A">A</option><option value="a">a</option>
+              </select>
+              <span class="text-gray-500 mx-1">×</span>
+              <select id="di-p1-b1" class="bg-gray-700 border border-gray-600 rounded px-1 py-1 text-sm text-gray-100 focus:outline-none focus:border-teal-500">
+                <option value="B">B</option><option value="b">b</option>
+              </select>
+              <select id="di-p1-b2" class="bg-gray-700 border border-gray-600 rounded px-1 py-1 text-sm text-gray-100 focus:outline-none focus:border-teal-500">
+                <option value="B">B</option><option value="b">b</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400 mb-1">親 P2</p>
+            <div class="flex gap-1 items-center">
+              <select id="di-p2-a1" class="bg-gray-700 border border-gray-600 rounded px-1 py-1 text-sm text-gray-100 focus:outline-none focus:border-teal-500">
+                <option value="A">A</option><option value="a">a</option>
+              </select>
+              <select id="di-p2-a2" class="bg-gray-700 border border-gray-600 rounded px-1 py-1 text-sm text-gray-100 focus:outline-none focus:border-teal-500">
+                <option value="A">A</option><option value="a">a</option>
+              </select>
+              <span class="text-gray-500 mx-1">×</span>
+              <select id="di-p2-b1" class="bg-gray-700 border border-gray-600 rounded px-1 py-1 text-sm text-gray-100 focus:outline-none focus:border-teal-500">
+                <option value="B">B</option><option value="b">b</option>
+              </select>
+              <select id="di-p2-b2" class="bg-gray-700 border border-gray-600 rounded px-1 py-1 text-sm text-gray-100 focus:outline-none focus:border-teal-500">
+                <option value="B">B</option><option value="b">b</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="di-grid-container" class="bg-gray-800 rounded p-4 mb-4 overflow-x-auto"></div>
+      <div id="di-stats" class="bg-gray-800 rounded p-4 mb-4"></div>
+    </div>
+
+    <!-- Example diseases section -->
+    <div class="bg-gray-800 rounded p-4">
+      <h2 class="text-sm font-bold text-gray-300 mb-3">遺伝病の例（常染色体劣性遺伝）</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+        <div class="bg-gray-700 rounded p-3">
+          <h3 class="text-red-400 font-bold mb-1">鎌状赤血球症</h3>
+          <p class="text-xs text-gray-400">HBB遺伝子変異。劣性遺伝（aa）で発症。ヘテロ（Aa）は保因者で耐マラリア性あり。</p>
+          <button class="mt-2 text-xs bg-gray-600 hover:bg-gray-500 text-gray-200 px-2 py-1 rounded transition-colors"
+            onclick="loadExample('Aa','Aa')" aria-label="鎌状赤血球症の例をロードする">例を表示</button>
+        </div>
+        <div class="bg-gray-700 rounded p-3">
+          <h3 class="text-red-400 font-bold mb-1">嚢胞性線維症</h3>
+          <p class="text-xs text-gray-400">CFTR遺伝子変異。劣性遺伝（cc）で発症。白人に多い遺伝病。</p>
+          <button class="mt-2 text-xs bg-gray-600 hover:bg-gray-500 text-gray-200 px-2 py-1 rounded transition-colors"
+            onclick="loadExample('Aa','Aa')" aria-label="嚢胞性線維症の例をロードする">例を表示</button>
+        </div>
+        <div class="bg-gray-700 rounded p-3">
+          <h3 class="text-teal-400 font-bold mb-1">完全優性の例（エンドウ豆）</h3>
+          <p class="text-xs text-gray-400">メンデルの実験。丸（A-）が優性、しわ（aa）が劣性。Aa × Aa で 3:1。</p>
+          <button class="mt-2 text-xs bg-gray-600 hover:bg-gray-500 text-gray-200 px-2 py-1 rounded transition-colors"
+            onclick="loadExample('Aa','Aa')" aria-label="エンドウ豆完全優性の例をロードする">例を表示</button>
+        </div>
+        <div class="bg-gray-700 rounded p-3">
+          <h3 class="text-teal-400 font-bold mb-1">二遺伝子独立（花の色×高さ）</h3>
+          <p class="text-xs text-gray-400">AaBb × AaBb で 9:3:3:1 比が生まれる（メンデルの独立の法則）。</p>
+          <button class="mt-2 text-xs bg-gray-600 hover:bg-gray-500 text-gray-200 px-2 py-1 rounded transition-colors"
+            onclick="loadDiExample()" aria-label="二遺伝子独立の例をロードする">例を表示</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Tab switching
+    document.getElementById('tab-mono').addEventListener('click', () => {
+      document.getElementById('panel-mono').classList.remove('hidden');
+      document.getElementById('panel-di').classList.add('hidden');
+      document.getElementById('tab-mono').className = 'tab-btn bg-teal-700 text-white px-4 py-2 rounded font-medium text-sm';
+      document.getElementById('tab-di').className = 'tab-btn bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-2 rounded font-medium text-sm';
+    });
+    document.getElementById('tab-di').addEventListener('click', () => {
+      document.getElementById('panel-mono').classList.add('hidden');
+      document.getElementById('panel-di').classList.remove('hidden');
+      document.getElementById('tab-di').className = 'tab-btn bg-teal-700 text-white px-4 py-2 rounded font-medium text-sm';
+      document.getElementById('tab-mono').className = 'tab-btn bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-2 rounded font-medium text-sm';
+      renderDi();
+    });
+
+    // Mono rendering
+    function sortAlleles(a, b) {
+      // Sort so uppercase comes first
+      if (a === a.toUpperCase() && b === b.toLowerCase()) return a + b;
+      if (a === a.toLowerCase() && b === b.toUpperCase()) return b + a;
+      return a <= b ? a + b : b + a;
+    }
+
+    function isHomoDom(g) { return g === 'AA'; }
+    function isHetero(g) { return g === 'Aa'; }
+    function isHomoRec(g) { return g === 'aa'; }
+    function isDominant(g) { return g.includes('A'); }
+
+    function cellClass(g) {
+      if (isHomoDom(g)) return 'bg-teal-900 text-teal-200 border-teal-700';
+      if (isHetero(g)) return 'bg-teal-800 text-teal-300 border-teal-600';
+      return 'bg-red-900 text-red-200 border-red-700';
+    }
+
+    function renderMono() {
+      const p1a1 = document.getElementById('p1-a1').value;
+      const p1a2 = document.getElementById('p1-a2').value;
+      const p2a1 = document.getElementById('p2-a1').value;
+      const p2a2 = document.getElementById('p2-a2').value;
+      const p1 = [p1a1, p1a2];
+      const p2 = [p2a1, p2a2];
+
+      const domTrait = document.getElementById('dominant-trait').value || '優性';
+      const recTrait = document.getElementById('recessive-trait').value || '劣性';
+
+      const container = document.getElementById('mono-grid-container');
+      container.textContent = '';
+
+      // Build grid
+      const table = document.createElement('table');
+      table.className = 'border-collapse mx-auto';
+
+      // Header row
+      const thead = document.createElement('thead');
+      const hRow = document.createElement('tr');
+      const emptyTh = document.createElement('th');
+      emptyTh.className = 'w-14 h-10';
+      hRow.appendChild(emptyTh);
+
+      p2.forEach(a => {
+        const th = document.createElement('th');
+        th.className = 'w-20 h-10 text-center text-lg font-bold text-blue-300 border border-gray-600 bg-gray-700 px-3';
+        th.textContent = a;
+        hRow.appendChild(th);
+      });
+      thead.appendChild(hRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      const genotypeCounts = {};
+      p1.forEach(a1 => {
+        const tr = document.createElement('tr');
+        const th = document.createElement('th');
+        th.className = 'text-center text-lg font-bold text-green-300 border border-gray-600 bg-gray-700 px-3 h-16';
+        th.textContent = a1;
+        tr.appendChild(th);
+        p2.forEach(a2 => {
+          const geno = sortAlleles(a1, a2);
+          genotypeCounts[geno] = (genotypeCounts[geno] || 0) + 1;
+          const td = document.createElement('td');
+          td.className = `w-20 h-16 text-center text-xl font-bold border ${cellClass(geno)}`;
+          td.textContent = geno;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      container.appendChild(table);
+
+      // Stats
+      const stats = document.getElementById('mono-stats');
+      stats.textContent = '';
+      const total = 4;
+
+      // Genotype ratio
+      const gtDiv = document.createElement('div');
+      gtDiv.className = 'mb-3';
+      const gtTitle = document.createElement('h3');
+      gtTitle.className = 'text-xs font-bold text-gray-400 mb-2';
+      gtTitle.textContent = '遺伝子型比';
+      gtDiv.appendChild(gtTitle);
+      const gtRow = document.createElement('div');
+      gtRow.className = 'flex gap-4 flex-wrap';
+      Object.entries(genotypeCounts).forEach(([g, c]) => {
+        const span = document.createElement('span');
+        span.className = `text-sm px-2 py-1 rounded border ${cellClass(g)}`;
+        span.textContent = g + ': ' + c + '/' + total;
+        gtRow.appendChild(span);
+      });
+      gtDiv.appendChild(gtRow);
+      stats.appendChild(gtDiv);
+
+      // Phenotype ratio
+      let domCount = 0, recCount = 0;
+      Object.entries(genotypeCounts).forEach(([g, c]) => {
+        if (isDominant(g)) domCount += c;
+        else recCount += c;
+      });
+      const ptDiv = document.createElement('div');
+      const ptTitle = document.createElement('h3');
+      ptTitle.className = 'text-xs font-bold text-gray-400 mb-2';
+      ptTitle.textContent = '表現型比';
+      ptDiv.appendChild(ptTitle);
+      const ptRow = document.createElement('div');
+      ptRow.className = 'flex gap-4 flex-wrap';
+      if (domCount > 0) {
+        const s1 = document.createElement('span');
+        s1.className = 'text-sm bg-teal-900 text-teal-200 border border-teal-700 px-2 py-1 rounded';
+        s1.textContent = domTrait + ': ' + domCount + '/' + total;
+        ptRow.appendChild(s1);
+      }
+      if (recCount > 0) {
+        const s2 = document.createElement('span');
+        s2.className = 'text-sm bg-red-900 text-red-200 border border-red-700 px-2 py-1 rounded';
+        s2.textContent = recTrait + ': ' + recCount + '/' + total;
+        ptRow.appendChild(s2);
+      }
+      ptDiv.appendChild(ptRow);
+      // Simplified ratio
+      const gcd = (a, b) => b ? gcd(b, a % b) : a;
+      if (domCount > 0 && recCount > 0) {
+        const g = gcd(domCount, recCount);
+        const ratioEl = document.createElement('p');
+        ratioEl.className = 'text-sm text-yellow-400 mt-2';
+        ratioEl.textContent = '表現型比 = ' + (domCount/g) + ' : ' + (recCount/g) + '（優性 : 劣性）';
+        ptDiv.appendChild(ratioEl);
+      } else if (domCount === total) {
+        const ratioEl = document.createElement('p');
+        ratioEl.className = 'text-sm text-yellow-400 mt-2';
+        ratioEl.textContent = '全て優性表現型（' + domTrait + '）';
+        ptDiv.appendChild(ratioEl);
+      }
+      stats.appendChild(ptDiv);
+    }
+
+    // Di rendering
+    function getDiGametes(a1, a2, b1, b2) {
+      // AB, Ab, aB, ab gametes
+      const aAlleles = [a1, a2];
+      const bAlleles = [b1, b2];
+      const gametes = [];
+      aAlleles.forEach(a => bAlleles.forEach(b => {
+        gametes.push(a + b);
+      }));
+      return gametes;
+    }
+
+    function diCellClass(aa, bb) {
+      const domA = aa.includes('A'), domB = bb.includes('B');
+      if (domA && domB) return 'bg-teal-900 text-teal-200 border-teal-700';
+      if (domA && !domB) return 'bg-blue-900 text-blue-200 border-blue-700';
+      if (!domA && domB) return 'bg-purple-900 text-purple-200 border-purple-700';
+      return 'bg-red-900 text-red-200 border-red-700';
+    }
+
+    function normDi(a1, a2, b1, b2) {
+      const aSort = a1 <= a2 ? a1 + a2 : a2 + a1;
+      const bSort = b1 <= b2 ? b1 + b2 : b2 + b1;
+      return aSort.replace('Aa','Aa').replace('aA','Aa') + bSort.replace('Bb','Bb').replace('bB','Bb');
+    }
+
+    function renderDi() {
+      const g1 = getDiGametes(
+        document.getElementById('di-p1-a1').value,
+        document.getElementById('di-p1-a2').value,
+        document.getElementById('di-p1-b1').value,
+        document.getElementById('di-p1-b2').value
+      );
+      const g2 = getDiGametes(
+        document.getElementById('di-p2-a1').value,
+        document.getElementById('di-p2-a2').value,
+        document.getElementById('di-p2-b1').value,
+        document.getElementById('di-p2-b2').value
+      );
+
+      const container = document.getElementById('di-grid-container');
+      container.textContent = '';
+
+      const table = document.createElement('table');
+      table.className = 'border-collapse mx-auto';
+
+      const thead = document.createElement('thead');
+      const hRow = document.createElement('tr');
+      const emptyTh = document.createElement('th');
+      emptyTh.className = 'w-12 h-10 bg-gray-800';
+      hRow.appendChild(emptyTh);
+      g2.forEach(g => {
+        const th = document.createElement('th');
+        th.className = 'w-20 text-center text-sm font-bold text-blue-300 border border-gray-600 bg-gray-700 px-1 py-2';
+        th.textContent = g;
+        hRow.appendChild(th);
+      });
+      thead.appendChild(hRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      const phenoCounts = { 'A-B-': 0, 'A-bb': 0, 'aaB-': 0, 'aabb': 0 };
+      const genoCounts = {};
+
+      g1.forEach(ga => {
+        const tr = document.createElement('tr');
+        const th = document.createElement('th');
+        th.className = 'text-center text-sm font-bold text-green-300 border border-gray-600 bg-gray-700 px-2 py-2';
+        th.textContent = ga;
+        tr.appendChild(th);
+        g2.forEach(gb => {
+          // Combine gametes
+          const a1 = ga[0], b1 = ga[1], a2 = gb[0], b2 = gb[1];
+          const aNorm = ([a1,a2].includes('A') ? 'A' : 'a') + ([a1,a2].filter(x=>x==='a').length === 2 ? 'a' : 'A').replace('AA','A');
+          const aGeno = [a1,a2].sort().join('').replace('aA','Aa');
+          const bGeno = [b1,b2].sort().join('').replace('bB','Bb');
+          const fullGeno = aGeno + bGeno;
+          genoCounts[fullGeno] = (genoCounts[fullGeno] || 0) + 1;
+
+          const domA = aGeno.includes('A');
+          const domB = bGeno.includes('B');
+          const key = (domA ? 'A-' : 'aa') + (domB ? 'B-' : 'bb');
+          phenoCounts[key]++;
+
+          const td = document.createElement('td');
+          td.className = `w-20 text-center text-xs font-bold border h-12 ${diCellClass(aGeno, bGeno)}`;
+          const gDiv = document.createElement('div');
+          gDiv.textContent = fullGeno;
+          td.appendChild(gDiv);
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      container.appendChild(table);
+
+      // Stats
+      const stats = document.getElementById('di-stats');
+      stats.textContent = '';
+      const total = 16;
+      const ptTitle = document.createElement('h3');
+      ptTitle.className = 'text-xs font-bold text-gray-400 mb-2';
+      ptTitle.textContent = '表現型比 (16分の)';
+      stats.appendChild(ptTitle);
+      const ptRow = document.createElement('div');
+      ptRow.className = 'flex flex-wrap gap-3 mb-3';
+      const labels = { 'A-B-': '優A 優B', 'A-bb': '優A 劣B', 'aaB-': '劣A 優B', 'aabb': '劣A 劣B' };
+      const classes = { 'A-B-': 'bg-teal-900 border-teal-700 text-teal-200', 'A-bb': 'bg-blue-900 border-blue-700 text-blue-200', 'aaB-': 'bg-purple-900 border-purple-700 text-purple-200', 'aabb': 'bg-red-900 border-red-700 text-red-200' };
+      Object.entries(phenoCounts).forEach(([k, c]) => {
+        if (c === 0) return;
+        const span = document.createElement('span');
+        span.className = `text-sm border rounded px-2 py-1 ${classes[k]}`;
+        span.textContent = labels[k] + ': ' + c + '/16';
+        ptRow.appendChild(span);
+      });
+      stats.appendChild(ptRow);
+
+      // Simplified ratio check if 9:3:3:1
+      const vals = Object.values(phenoCounts).filter(v => v > 0);
+      if (vals.length === 4 && JSON.stringify(Object.values(phenoCounts)) === JSON.stringify([9,3,3,1])) {
+        const ratio = document.createElement('p');
+        ratio.className = 'text-yellow-400 text-sm';
+        ratio.textContent = '表現型比 = 9 : 3 : 3 : 1（独立の法則が成立）';
+        stats.appendChild(ratio);
+      }
+    }
+
+    // Attach listeners
+    ['p1-a1','p1-a2','p2-a1','p2-a2','dominant-trait','recessive-trait'].forEach(id => {
+      document.getElementById(id).addEventListener('change', renderMono);
+    });
+    document.getElementById('dominant-trait').addEventListener('input', renderMono);
+    document.getElementById('recessive-trait').addEventListener('input', renderMono);
+
+    ['di-p1-a1','di-p1-a2','di-p2-a1','di-p2-a2','di-p1-b1','di-p1-b2','di-p2-b1','di-p2-b2'].forEach(id => {
+      document.getElementById(id).addEventListener('change', renderDi);
+    });
+
+    // Set defaults for di to AaBb × AaBb
+    document.getElementById('di-p1-a2').value = 'a';
+    document.getElementById('di-p2-a2').value = 'a';
+    document.getElementById('di-p1-b2').value = 'b';
+    document.getElementById('di-p2-b2').value = 'b';
+
+    function loadExample(p1, p2) {
+      document.getElementById('tab-mono').click();
+      const p1arr = p1.split('');
+      const p2arr = p2.split('');
+      document.getElementById('p1-a1').value = p1arr[0];
+      document.getElementById('p1-a2').value = p1arr[1];
+      document.getElementById('p2-a1').value = p2arr[0];
+      document.getElementById('p2-a2').value = p2arr[1];
+      renderMono();
+    }
+
+    function loadDiExample() {
+      document.getElementById('tab-di').click();
+      ['di-p1-a1','di-p2-a1'].forEach(id => document.getElementById(id).value = 'A');
+      ['di-p1-a2','di-p2-a2'].forEach(id => document.getElementById(id).value = 'a');
+      ['di-p1-b1','di-p2-b1'].forEach(id => document.getElementById(id).value = 'B');
+      ['di-p1-b2','di-p2-b2'].forEach(id => document.getElementById(id).value = 'b');
+      renderDi();
+    }
+
+    renderMono();
+  </script>
+</body>
+</html>
